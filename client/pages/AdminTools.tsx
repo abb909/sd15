@@ -61,6 +61,10 @@ export default function AdminTools() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isFloatingAddArticleOpen, setIsFloatingAddArticleOpen] = useState(false);
 
+  // Pagination state for users table
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
+
   const [formData, setFormData] = useState({
     email: '',
     password: '',
