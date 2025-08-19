@@ -180,6 +180,39 @@
       font-size: 0.875rem;
       line-height: 1.25rem;
     }
+
+    /* Prevent text from being too small on mobile */
+    body {
+      font-size: 16px;
+      line-height: 1.5;
+    }
+
+    /* Better mobile headings */
+    h1 {
+      font-size: 1.5rem !important;
+      line-height: 1.4 !important;
+      font-weight: 600 !important;
+    }
+
+    h2 {
+      font-size: 1.25rem !important;
+      line-height: 1.4 !important;
+      font-weight: 600 !important;
+    }
+
+    h3 {
+      font-size: 1.125rem !important;
+      line-height: 1.4 !important;
+      font-weight: 500 !important;
+    }
+
+    /* Mobile-optimized buttons */
+    .btn {
+      min-height: 44px !important;
+      min-width: 44px !important;
+      font-size: 16px !important;
+      padding: 0.75rem 1rem !important;
+    }
   }
 
   /* Mobile card spacing */
