@@ -3,12 +3,12 @@ import { getAuth, connectAuthEmulator } from 'firebase/auth';
 import { getFirestore, connectFirestoreEmulator, doc, getDoc, enableNetwork, disableNetwork } from 'firebase/firestore';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBs2KLkUctiI1-nl8frb4ohLulygF0bhQo",
-  authDomain: "secteur-44c39.firebaseapp.com",
-  projectId: "secteur-44c39",
-  storageBucket: "secteur-44c39.firebasestorage.app",
-  messagingSenderId: "829069400071",
-  appId: "1:829069400071:web:a080b65f325377ef4772a2"
+  apiKey: "AIzaSyCKZpHRAm1W6lQddnArZo6Onxiwfngty6Y",
+  authDomain: "secteur-1.firebaseapp.com",
+  projectId: "secteur-1",
+  storageBucket: "secteur-1.firebasestorage.app",
+  messagingSenderId: "568304445766",
+  appId: "1:568304445766:web:274405f81b2f432b80dd47"
 };
 
 // Debug: Log Firebase config
