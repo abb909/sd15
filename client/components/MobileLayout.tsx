@@ -293,17 +293,19 @@ export const MobileLayout = ({ children }: MobileLayoutProps) => {
                 </SheetContent>
               </Sheet>
 
-              <div className="flex items-center space-x-2">
-                <div className="p-1.5 bg-blue-50 rounded-lg lg:hidden">
+              <div className="flex items-center space-x-3">
+                {/* Logo - always visible */}
+                <div className="p-1.5 bg-blue-50 rounded-lg">
                   <img
                     src="https://cdn.builder.io/api/v1/image/assets%2F54187f8fd2324ab0baf205c15c42f7d5%2F58ff0b28018a4660a6f30e69fd206000?format=webp&width=400"
                     alt="AromaHerbes"
-                    className="h-6 w-auto object-contain"
+                    className="h-6 w-auto object-contain lg:h-8"
                   />
                 </div>
+                {/* Desktop: Show app title and current page */}
                 <div className="hidden lg:block">
                   <h1 className="text-lg font-semibold text-gray-900">
-                    {getCurrentPageName()}
+                    Gestion des Secteurs - {getCurrentPageName()}
                   </h1>
                   {user?.fermeId && (
                     <p className="text-sm text-gray-500">
