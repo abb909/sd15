@@ -610,6 +610,30 @@ export default function Stock() {
   const handleDownloadInventory = () => {
     const wb = XLSX.utils.book_new();
 
+    // Add article summary sheet first (for both all farms and single farm views)
+    if (aggregatedStocks.length > 0) {
+      const summaryData = aggregatedStocks.map(aggregated => ({
+        'Article': aggregated.item,
+        'Quantité Totale': aggregated.totalQuantity,
+        'Unité': aggregated.unit,
+        'Nombre de Fermes': aggregated.farms.length,
+        'Dernière MAJ': formatDate(aggregated.lastUpdated),
+        'Détail par Fermes': aggregated.farms.map(f => `${f.farmName}: ${f.quantity}`).join('; ')
+      }));
+
+      const summaryWs = XLSX.utils.json_to_sheet(summaryData);
+      const cols = [
+        { width: 30 }, // Article
+        { width: 20 }, // Quantité Totale
+        { width: 12 }, // Unité
+        { width: 18 }, // Nombre de Fermes
+        { width: 20 }, // Dernière MAJ
+        { width: 50 }  // Détail par Fermes
+      ];
+      summaryWs['!cols'] = cols;
+      XLSX.utils.book_append_sheet(wb, summaryWs, 'Totaux par Article');
+    }
+
     if ((isSuperAdmin || hasAllFarmsAccess) && selectedFerme === 'all') {
       // Create a sheet for each farm
       fermes.forEach(ferme => {
@@ -641,7 +665,7 @@ export default function Stock() {
         }
       });
 
-      // Add summary sheet
+      // Add detailed summary sheet
       const allStocksData = stocks.map(stock => ({
         'Ferme': getFermeName(stock.secteurId),
         'Article': stock.item,
