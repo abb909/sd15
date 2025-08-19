@@ -30,7 +30,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Settings, UserPlus, Users, AlertCircle, Edit, Trash2, Shield, Key, Plus, Package } from 'lucide-react';
+import { Settings, UserPlus, Users, AlertCircle, Edit, Trash2, Shield, Key, Plus, Package, ChevronLeft, ChevronRight } from 'lucide-react';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc, updateDoc, deleteDoc, addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
