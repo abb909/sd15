@@ -744,55 +744,110 @@ export default function AdminTools() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {allUsers.map((userItem) => (
-                  <TableRow key={userItem.id}>
-                    <TableCell>
-                      <div>
-                        <div className="font-medium text-gray-900">{userItem.nom}</div>
-                        <div className="text-sm text-gray-500">{userItem.email}</div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge className={getRoleBadgeColor(userItem.role)}>
-                        {getRoleLabel(userItem.role)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <span className="text-sm text-gray-600">
-                        {getFermeName(userItem.fermeId)}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <span className="text-sm text-gray-600">
-                        {userItem.telephone || '-'}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex space-x-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleEditUser(userItem)}
-                        >
-                          <Edit className="h-3 w-3" />
-                        </Button>
-                        {userItem.id !== user?.uid && (
+                {(() => {
+                  const startIndex = (currentPage - 1) * itemsPerPage;
+                  const endIndex = startIndex + itemsPerPage;
+                  const paginatedUsers = allUsers.slice(startIndex, endIndex);
+
+                  return paginatedUsers.map((userItem) => (
+                    <TableRow key={userItem.id}>
+                      <TableCell>
+                        <div>
+                          <div className="font-medium text-gray-900">{userItem.nom}</div>
+                          <div className="text-sm text-gray-500">{userItem.email}</div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge className={getRoleBadgeColor(userItem.role)}>
+                          {getRoleLabel(userItem.role)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-sm text-gray-600">
+                          {getFermeName(userItem.fermeId)}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-sm text-gray-600">
+                          {userItem.telephone || '-'}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex space-x-2">
                           <Button
                             variant="outline"
                             size="sm"
-                            className="text-red-600 hover:text-red-700"
-                            onClick={() => handleDeleteUser(userItem)}
+                            onClick={() => handleEditUser(userItem)}
                           >
-                            <Trash2 className="h-3 w-3" />
+                            <Edit className="h-3 w-3" />
                           </Button>
-                        )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                          {userItem.id !== user?.uid && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="text-red-600 hover:text-red-700"
+                              onClick={() => handleDeleteUser(userItem)}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ));
+                })()}
               </TableBody>
             </Table>
           </div>
+
+          {/* Pagination Controls */}
+          {allUsers.length > itemsPerPage && (
+            <div className="flex items-center justify-between px-4 py-4 border-t border-gray-200">
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <span>
+                  Affichage {((currentPage - 1) * itemsPerPage) + 1}-{Math.min(currentPage * itemsPerPage, allUsers.length)} sur {allUsers.length} utilisateurs
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                  className="flex items-center gap-1"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  Précédent
+                </Button>
+
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: Math.ceil(allUsers.length / itemsPerPage) }, (_, i) => i + 1).map((page) => (
+                    <Button
+                      key={page}
+                      variant={currentPage === page ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setCurrentPage(page)}
+                      className="w-8 h-8 p-0"
+                    >
+                      {page}
+                    </Button>
+                  ))}
+                </div>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.min(Math.ceil(allUsers.length / itemsPerPage), prev + 1))}
+                  disabled={currentPage === Math.ceil(allUsers.length / itemsPerPage)}
+                  className="flex items-center gap-1"
+                >
+                  Suivant
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
