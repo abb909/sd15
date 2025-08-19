@@ -1,15 +1,9 @@
-import { CapacitorConfig } from '@capacitor/cli';
+import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.aromaherbes.secteurs',
-  appName: 'Gestion des Secteurs Aroma',
-  webDir: 'dist/spa',
-  server: {
-    androidScheme: 'https'
-  },
-  android: {
-    allowMixedContent: true
-  }
+  appId: 'com.aromager.secteur',
+  appName: 'Aroma secteur',
+  webDir: 'dist'
 };
 
 export default config;
