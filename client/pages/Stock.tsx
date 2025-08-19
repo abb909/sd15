@@ -617,8 +617,7 @@ export default function Stock() {
         'Quantité Totale': aggregated.totalQuantity,
         'Unité': aggregated.unit,
         'Nombre de Fermes': aggregated.farms.length,
-        'Dernière MAJ': formatDate(aggregated.lastUpdated),
-        'Détail par Fermes': aggregated.farms.map(f => `${f.farmName}: ${f.quantity}`).join('; ')
+        'Dernière MAJ': formatDate(aggregated.lastUpdated)
       }));
 
       const summaryWs = XLSX.utils.json_to_sheet(summaryData);
@@ -627,8 +626,7 @@ export default function Stock() {
         { width: 20 }, // Quantité Totale
         { width: 12 }, // Unité
         { width: 18 }, // Nombre de Fermes
-        { width: 20 }, // Dernière MAJ
-        { width: 50 }  // Détail par Fermes
+        { width: 20 }  // Dernière MAJ
       ];
       summaryWs['!cols'] = cols;
       XLSX.utils.book_append_sheet(wb, summaryWs, 'Totaux par Article');
