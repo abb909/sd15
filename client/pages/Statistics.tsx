@@ -3193,14 +3193,15 @@ export default function Statistics() {
                 };
               })}
               columns={[
-                { id: 'nom', header: 'Nom du Superviseur' },
-                { id: 'telephone', header: 'Téléphone' },
-                
-                { id: 'workerCount', header: 'Nombre d\'ouvriers' },
-                { id: 'percentage', header: 'Pourcentage' },
+                { id: 'nom', header: 'Nom du Superviseur', sortable: true, filterable: true },
+                { id: 'telephone', header: 'Téléphone', sortable: true, filterable: true },
+                { id: 'workerCount', header: 'Nombre d\'ouvriers', type: 'number', sortable: true, filterable: true },
+                { id: 'percentage', header: 'Pourcentage', sortable: true, filterable: true },
                 {
                   id: 'performance',
                   header: 'Performance',
+                  sortable: true,
+                  filterable: true,
                   cell: (supervisor: any) => (
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                       supervisor.performance === 'Excellent' ? 'bg-green-100 text-green-800' :
@@ -3215,6 +3216,12 @@ export default function Statistics() {
               ]}
               title="Liste des Superviseurs"
               description={`${supervisors.length} superviseurs au total`}
+              searchable={true}
+              filterable={true}
+              selectable={true}
+              exportable={true}
+              pagination={true}
+              pageSize={10}
             />
           </TabsContent>
         </Tabs>
