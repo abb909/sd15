@@ -61,7 +61,12 @@ import {
   TrendingDown as TrendDown,
   Eye,
   Sparkles,
-  Shield
+  Shield,
+  ChevronLeft,
+  ChevronRight,
+  Search,
+  FileText,
+  IdCard
 } from 'lucide-react';
 import { Ferme, Worker, Room } from '@shared/types';
 import * as XLSX from 'xlsx';
