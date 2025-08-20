@@ -1600,7 +1600,7 @@ export default function Stock() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredTransfers.map((transfer) => {
+                    {paginatedTransfers.map((transfer) => {
                       const isIncoming = transfer.toFermeId === user?.fermeId;
                       const isOutgoing = transfer.fromFermeId === user?.fermeId;
 
