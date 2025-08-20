@@ -66,7 +66,10 @@ import {
   ChevronRight,
   Search,
   FileText,
-  IdCard
+  IdCard,
+  ChevronsUpDown,
+  ChevronUp,
+  ChevronDown
 } from 'lucide-react';
 import { Ferme, Worker, Room } from '@shared/types';
 import * as XLSX from 'xlsx';
