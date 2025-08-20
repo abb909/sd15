@@ -3462,26 +3462,11 @@ function EnhancedWorkersTable({ workers, fermes, isSuperAdmin, hasAllFarmsAccess
       <ChevronDown className="ml-2 h-4 w-4" />;
   };
 
-  // Export to Excel function
+  // Export to Excel function with multiple sheets
   const handleExportExcel = () => {
-    const exportData = filteredWorkers.map(worker => ({
-      'Matricule': worker.matricule || '',
-      'Nom': worker.nom,
-      'Âge': worker.age,
-      'Genre': worker.sexe,
-      'Statut': worker.statut,
-      'Ferme': getFermeName(worker.fermeId),
-      'Chambre': worker.chambre || '',
-      'Date d\'entrée': worker.dateEntree ? new Date(worker.dateEntree).toLocaleDateString('fr-FR') : '',
-      'Date de sortie': worker.dateSortie ? new Date(worker.dateSortie).toLocaleDateString('fr-FR') : '',
-      'Téléphone': worker.telephone || '',
-      'Superviseur': worker.supervisorId || ''
-    }));
-
-    const ws = XLSX.utils.json_to_sheet(exportData);
     const wb = XLSX.utils.book_new();
 
-    // Set column widths
+    // Set column widths template
     const cols = [
       { width: 15 }, // Matricule
       { width: 25 }, // Nom
@@ -3495,12 +3480,112 @@ function EnhancedWorkersTable({ workers, fermes, isSuperAdmin, hasAllFarmsAccess
       { width: 15 }, // Téléphone
       { width: 20 }  // Superviseur
     ];
-    ws['!cols'] = cols;
 
-    XLSX.utils.book_append_sheet(wb, ws, 'Ouvriers');
+    // Create global sheet with all workers
+    const globalExportData = filteredWorkers.map(worker => ({
+      'Matricule': worker.matricule || '',
+      'Nom': worker.nom,
+      'Âge': worker.age,
+      'Genre': worker.sexe,
+      'Statut': worker.statut,
+      'Ferme': getFermeName(worker.fermeId),
+      'Chambre': worker.chambre || '',
+      'Date d\'entrée': worker.dateEntree ? new Date(worker.dateEntree).toLocaleDateString('fr-FR') : '',
+      'Date de sortie': worker.dateSortie ? new Date(worker.dateSortie).toLocaleDateString('fr-FR') : '',
+      'Téléphone': worker.telephone || '',
+      'Superviseur': worker.supervisorId || ''
+    }));
+
+    const globalWs = XLSX.utils.json_to_sheet(globalExportData);
+    globalWs['!cols'] = cols;
+    XLSX.utils.book_append_sheet(wb, globalWs, 'Global - Tous');
+
+    // Create separate sheet for each farm
+    const farmIds = [...new Set(filteredWorkers.map(worker => worker.fermeId))];
+
+    farmIds.forEach(fermeId => {
+      const farmWorkers = filteredWorkers.filter(worker => worker.fermeId === fermeId);
+
+      if (farmWorkers.length > 0) {
+        const farmExportData = farmWorkers.map(worker => ({
+          'Matricule': worker.matricule || '',
+          'Nom': worker.nom,
+          'Âge': worker.age,
+          'Genre': worker.sexe,
+          'Statut': worker.statut,
+          'Chambre': worker.chambre || '',
+          'Date d\'entrée': worker.dateEntree ? new Date(worker.dateEntree).toLocaleDateString('fr-FR') : '',
+          'Date de sortie': worker.dateSortie ? new Date(worker.dateSortie).toLocaleDateString('fr-FR') : '',
+          'Téléphone': worker.telephone || '',
+          'Superviseur': worker.supervisorId || ''
+        }));
+
+        const farmWs = XLSX.utils.json_to_sheet(farmExportData);
+
+        // Set column widths (excluding Ferme column for individual farm sheets)
+        const farmCols = [
+          { width: 15 }, // Matricule
+          { width: 25 }, // Nom
+          { width: 10 }, // Âge
+          { width: 10 }, // Genre
+          { width: 15 }, // Statut
+          { width: 15 }, // Chambre
+          { width: 15 }, // Date d'entrée
+          { width: 15 }, // Date de sortie
+          { width: 15 }, // Téléphone
+          { width: 20 }  // Superviseur
+        ];
+        farmWs['!cols'] = farmCols;
+
+        // Clean farm name for sheet name (max 31 characters, no special chars)
+        const farmName = getFermeName(fermeId);
+        const cleanFarmName = farmName.replace(/[^\w\s]/gi, '').substring(0, 31);
+
+        XLSX.utils.book_append_sheet(wb, farmWs, cleanFarmName);
+      }
+    });
+
+    // Create summary sheet with farm statistics
+    const summaryData = farmIds.map(fermeId => {
+      const farmWorkers = filteredWorkers.filter(worker => worker.fermeId === fermeId);
+      const activeWorkers = farmWorkers.filter(worker => worker.statut === 'actif');
+      const inactiveWorkers = farmWorkers.filter(worker => worker.statut === 'inactif');
+
+      return {
+        'Ferme': getFermeName(fermeId),
+        'Total Ouvriers': farmWorkers.length,
+        'Actifs': activeWorkers.length,
+        'Inactifs': inactiveWorkers.length,
+        'Pourcentage Actifs': farmWorkers.length > 0 ? Math.round((activeWorkers.length / farmWorkers.length) * 100) + '%' : '0%'
+      };
+    });
+
+    // Add total row
+    const totalWorkers = filteredWorkers.length;
+    const totalActive = filteredWorkers.filter(worker => worker.statut === 'actif').length;
+    const totalInactive = filteredWorkers.filter(worker => worker.statut === 'inactif').length;
+
+    summaryData.push({
+      'Ferme': 'TOTAL',
+      'Total Ouvriers': totalWorkers,
+      'Actifs': totalActive,
+      'Inactifs': totalInactive,
+      'Pourcentage Actifs': totalWorkers > 0 ? Math.round((totalActive / totalWorkers) * 100) + '%' : '0%'
+    });
+
+    const summaryWs = XLSX.utils.json_to_sheet(summaryData);
+    const summaryCols = [
+      { width: 25 }, // Ferme
+      { width: 15 }, // Total Ouvriers
+      { width: 15 }, // Actifs
+      { width: 15 }, // Inactifs
+      { width: 20 }  // Pourcentage Actifs
+    ];
+    summaryWs['!cols'] = summaryCols;
+    XLSX.utils.book_append_sheet(wb, summaryWs, 'Résumé');
 
     const currentDate = new Date().toISOString().split('T')[0];
-    const farmSuffix = selectedFerme === 'all' ? 'tous' : getFermeName(selectedFerme).replace(/[^\w]/g, '_');
+    const farmSuffix = selectedFerme === 'all' ? 'toutes_fermes' : getFermeName(selectedFerme).replace(/[^\w]/g, '_');
     const filename = `ouvriers_${farmSuffix}_${currentDate}.xlsx`;
 
     XLSX.writeFile(wb, filename);
