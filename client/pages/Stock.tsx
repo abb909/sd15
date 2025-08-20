@@ -1522,6 +1522,55 @@ export default function Stock() {
                   </TableBody>
                 </Table>
               </div>
+
+              {/* Inventory Pagination Controls */}
+              {filteredStocks.length > inventoryItemsPerPage && (
+                <div className="flex items-center justify-between px-4 py-4 border-t border-gray-200">
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <span>
+                      Affichage {inventoryStartIndex + 1}-{Math.min(inventoryEndIndex, filteredStocks.length)} sur {filteredStocks.length} articles
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setInventoryCurrentPage(prev => Math.max(1, prev - 1))}
+                      disabled={inventoryCurrentPage === 1}
+                      className="flex items-center gap-1"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                      Précédent
+                    </Button>
+
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: inventoryTotalPages }, (_, i) => i + 1).map((page) => (
+                        <Button
+                          key={page}
+                          variant={inventoryCurrentPage === page ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setInventoryCurrentPage(page)}
+                          className="w-8 h-8 p-0"
+                        >
+                          {page}
+                        </Button>
+                      ))}
+                    </div>
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setInventoryCurrentPage(prev => Math.min(inventoryTotalPages, prev + 1))}
+                      disabled={inventoryCurrentPage === inventoryTotalPages}
+                      className="flex items-center gap-1"
+                    >
+                      Suivant
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
