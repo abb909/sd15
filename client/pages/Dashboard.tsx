@@ -250,6 +250,12 @@ export default function Dashboard() {
     const mostCommonMotif = Object.entries(motifCounts)
       .sort(([,a], [,b]) => b - a)[0];
 
+    // Get top 3 most common motifs
+    const top3Motifs = Object.entries(motifCounts)
+      .sort(([,a], [,b]) => b - a)
+      .slice(0, 3)
+      .map(([motif, count]) => ({ motif, count }));
+
     // Calculate average length of stay
     const staysWithDuration = exitedWorkers
       .filter(w => w.dateEntree && w.dateSortie)
