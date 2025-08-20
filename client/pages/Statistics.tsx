@@ -3630,17 +3630,6 @@ function EnhancedWorkersTable({ workers, fermes, isSuperAdmin, hasAllFarmsAccess
           <div className="border-t pt-4">
             <h4 className="text-sm font-medium text-gray-700 mb-3">Actions et Filtres Avancés</h4>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div>
-                <Label htmlFor="age-filter">Âge Min.</Label>
-                <Input
-                  id="age-filter"
-                  placeholder="ex: 25"
-                  type="number"
-                  value={ageFilter}
-                  onChange={(e) => setAgeFilter(e.target.value)}
-                />
-              </div>
-
               <div className="flex items-end">
                 <Button
                   variant="outline"
@@ -3676,7 +3665,7 @@ function EnhancedWorkersTable({ workers, fermes, isSuperAdmin, hasAllFarmsAccess
                   className="w-full"
                 >
                   <IdCard className="h-4 w-4 mr-2" />
-                  Tous Matricules
+                  telecharger simple
                 </Button>
               </div>
             </div>
