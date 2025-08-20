@@ -116,14 +116,31 @@ export default function Stock() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
 
+  // Pagination for inventory table
+  const [inventoryCurrentPage, setInventoryCurrentPage] = useState(1);
+  const inventoryItemsPerPage = 10;
+
+  // Pagination for transfers table
+  const [transfersCurrentPage, setTransfersCurrentPage] = useState(1);
+  const transfersItemsPerPage = 10;
+
   // Pagination for workers with LIT/EPONGE allocations
   const [workersCurrentPage, setWorkersCurrentPage] = useState(1);
   const workersItemsPerPage = 10;
 
-  // Reset workers pagination when filters change
+  // Advanced filtering states
+  const [quantityFilter, setQuantityFilter] = useState('');
+  const [unitFilter, setUnitFilter] = useState('all');
+  const [availabilityFilter, setAvailabilityFilter] = useState('all');
+  const [sortColumn, setSortColumn] = useState<string>('');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+
+  // Reset pagination when filters change
   useEffect(() => {
+    setInventoryCurrentPage(1);
+    setTransfersCurrentPage(1);
     setWorkersCurrentPage(1);
-  }, [selectedFerme, searchTerm]);
+  }, [selectedFerme, searchTerm, quantityFilter, unitFilter, availabilityFilter]);
 
   // Calculate allocation counts for stock items
   const getAllocationCounts = (itemName: string, fermeId?: string) => {
@@ -350,14 +367,74 @@ export default function Stock() {
     }
   }, [user, isSuperAdmin, hasAllFarmsAccess]);
 
-  // Filtered data
+  // Filtered and sorted data
   const filteredStocks = useMemo(() => {
-    return stocks.filter(stock => {
+    let filtered = stocks.filter(stock => {
       const matchesSearch = stock.item.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesFerme = selectedFerme === 'all' || stock.secteurId === selectedFerme;
-      return matchesSearch && matchesFerme;
+
+      // Quantity filter
+      const matchesQuantity = quantityFilter === '' ||
+        stock.quantity >= parseInt(quantityFilter) ||
+        stock.quantity.toString().includes(quantityFilter);
+
+      // Unit filter
+      const matchesUnit = unitFilter === 'all' || stock.unit === unitFilter;
+
+      // Availability filter
+      const allocationCounts = getAllocationCounts(stock.item, stock.secteurId);
+      const available = Math.max(0, stock.quantity - allocationCounts.allocated);
+      const matchesAvailability = availabilityFilter === 'all' ||
+        (availabilityFilter === 'available' && available > 0) ||
+        (availabilityFilter === 'unavailable' && available === 0) ||
+        (availabilityFilter === 'low' && available > 0 && available <= 5);
+
+      return matchesSearch && matchesFerme && matchesQuantity && matchesUnit && matchesAvailability;
     });
-  }, [stocks, searchTerm, selectedFerme]);
+
+    // Apply sorting
+    if (sortColumn) {
+      filtered.sort((a, b) => {
+        let aValue: any;
+        let bValue: any;
+
+        switch (sortColumn) {
+          case 'item':
+            aValue = a.item.toLowerCase();
+            bValue = b.item.toLowerCase();
+            break;
+          case 'quantity':
+            aValue = a.quantity;
+            bValue = b.quantity;
+            break;
+          case 'available':
+            const aAllocation = getAllocationCounts(a.item, a.secteurId);
+            const bAllocation = getAllocationCounts(b.item, b.secteurId);
+            aValue = Math.max(0, a.quantity - aAllocation.allocated);
+            bValue = Math.max(0, b.quantity - bAllocation.allocated);
+            break;
+          case 'ferme':
+            aValue = getFermeName(a.secteurId).toLowerCase();
+            bValue = getFermeName(b.secteurId).toLowerCase();
+            break;
+          case 'lastUpdated':
+            aValue = new Date(a.lastUpdated).getTime();
+            bValue = new Date(b.lastUpdated).getTime();
+            break;
+          default:
+            return 0;
+        }
+
+        if (typeof aValue === 'string') {
+          return sortDirection === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
+        } else {
+          return sortDirection === 'asc' ? aValue - bValue : bValue - aValue;
+        }
+      });
+    }
+
+    return filtered;
+  }, [stocks, searchTerm, selectedFerme, quantityFilter, unitFilter, availabilityFilter, sortColumn, sortDirection]);
 
   const filteredTransfers = useMemo(() => {
     return transfers.filter(transfer => {
@@ -365,6 +442,40 @@ export default function Stock() {
       return matchesSearch;
     });
   }, [transfers, searchTerm]);
+
+  // Get unique units for filter dropdown
+  const uniqueUnits = useMemo(() => {
+    const units = [...new Set(stocks.map(stock => stock.unit))];
+    return units.sort();
+  }, [stocks]);
+
+  // Pagination calculations for inventory
+  const inventoryTotalPages = Math.ceil(filteredStocks.length / inventoryItemsPerPage);
+  const inventoryStartIndex = (inventoryCurrentPage - 1) * inventoryItemsPerPage;
+  const inventoryEndIndex = inventoryStartIndex + inventoryItemsPerPage;
+  const paginatedInventoryStocks = filteredStocks.slice(inventoryStartIndex, inventoryEndIndex);
+
+  // Pagination calculations for transfers
+  const transfersTotalPages = Math.ceil(filteredTransfers.length / transfersItemsPerPage);
+  const transfersStartIndex = (transfersCurrentPage - 1) * transfersItemsPerPage;
+  const transfersEndIndex = transfersStartIndex + transfersItemsPerPage;
+  const paginatedTransfers = filteredTransfers.slice(transfersStartIndex, transfersEndIndex);
+
+  // Handle column sorting
+  const handleSort = (column: string) => {
+    if (sortColumn === column) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortColumn(column);
+      setSortDirection('asc');
+    }
+  };
+
+  // Sort indicator component
+  const SortIndicator = ({ column }: { column: string }) => {
+    if (sortColumn !== column) return null;
+    return sortDirection === 'asc' ? ' ↑' : ' ↓';
+  };
 
   // Get ferme name
   const getFermeName = (fermeId: string) => {
