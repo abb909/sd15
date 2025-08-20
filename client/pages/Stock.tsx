@@ -449,9 +449,23 @@ export default function Stock() {
   const endIndex = startIndex + itemsPerPage;
   const paginatedAggregatedStocks = aggregatedStocks.slice(startIndex, endIndex);
 
+  // Pagination for main inventory
+  const inventoryTotalPages = Math.ceil(filteredStocks.length / inventoryItemsPerPage);
+  const inventoryStartIndex = (inventoryCurrentPage - 1) * inventoryItemsPerPage;
+  const inventoryEndIndex = inventoryStartIndex + inventoryItemsPerPage;
+  const paginatedInventoryStocks = filteredStocks.slice(inventoryStartIndex, inventoryEndIndex);
+
+  // Pagination for transfers
+  const transfersTotalPages = Math.ceil(filteredTransfers.length / transfersItemsPerPage);
+  const transfersStartIndex = (transfersCurrentPage - 1) * transfersItemsPerPage;
+  const transfersEndIndex = transfersStartIndex + transfersItemsPerPage;
+  const paginatedTransfers = filteredTransfers.slice(transfersStartIndex, transfersEndIndex);
+
   // Reset to page 1 when search changes
   React.useEffect(() => {
     setCurrentPage(1);
+    setInventoryCurrentPage(1);
+    setTransfersCurrentPage(1);
   }, [searchTerm]);
 
   // Debug function to force fetch all articles
@@ -564,7 +578,7 @@ export default function Stock() {
       if (quantityChange !== 0 && !addForm.notes) {
         updateNotes = quantityChange > 0
           ? `Quantité augmentée de ${quantityChange} le ${new Date().toLocaleDateString('fr-FR')} (${oldQuantity} → ${newQuantity})`
-          : `Quantité réduite de ${Math.abs(quantityChange)} le ${new Date().toLocaleDateString('fr-FR')} (${oldQuantity} → ${newQuantity})`;
+          : `Quantité r��duite de ${Math.abs(quantityChange)} le ${new Date().toLocaleDateString('fr-FR')} (${oldQuantity} → ${newQuantity})`;
       }
 
       await updateDoc(stockRef, {
@@ -694,7 +708,7 @@ export default function Stock() {
           { width: 20 }  // Dernière mise à jour
         ];
         summaryWs['!cols'] = cols;
-        XLSX.utils.book_append_sheet(wb, summaryWs, 'R��sumé Global');
+        XLSX.utils.book_append_sheet(wb, summaryWs, 'Résumé Global');
       }
     } else {
       // Single farm or filtered view
