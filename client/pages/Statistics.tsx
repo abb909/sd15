@@ -3146,13 +3146,15 @@ export default function Statistics() {
             <ResponsiveDataTable
               data={rooms}
               columns={[
-                { id: 'numero', header: 'Numéro' },
-                { id: 'genre', header: 'Genre' },
-                { id: 'capaciteTotale', header: 'Capacité' },
-                { id: 'occupantsActuels', header: 'Occupants' },
+                { id: 'numero', header: 'Numéro', sortable: true, filterable: true },
+                { id: 'genre', header: 'Genre', sortable: true, filterable: true },
+                { id: 'capaciteTotale', header: 'Capacité', type: 'number', sortable: true, filterable: true },
+                { id: 'occupantsActuels', header: 'Occupants', type: 'number', sortable: true, filterable: true },
                 {
                   id: 'fermeId',
                   header: 'Ferme',
+                  sortable: true,
+                  filterable: true,
                   cell: (room: Room) => {
                     const ferme = fermes.find(f => f.id === room.fermeId);
                     return ferme ? ferme.nom : room.fermeId;
@@ -3162,6 +3164,12 @@ export default function Statistics() {
 
               title="Liste des Chambres"
               description={`${rooms.length} chambres au total`}
+              searchable={true}
+              filterable={true}
+              selectable={true}
+              exportable={true}
+              pagination={true}
+              pageSize={10}
             />
           </TabsContent>
 
