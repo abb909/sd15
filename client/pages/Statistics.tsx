@@ -3112,16 +3112,32 @@ export default function Statistics() {
             <ResponsiveDataTable
               data={workers}
               columns={[
-                { id: 'nom', header: 'Nom' },
-                { id: 'age', header: 'Âge' },
-                { id: 'sexe', header: 'Genre' },
-                { id: 'statut', header: 'Statut' },
-                { id: 'chambre', header: 'Chambre' },
-                { id: 'dateEntree', header: 'Date d\'entrée', type: 'date' },
+                { id: 'nom', header: 'Nom', sortable: true, filterable: true },
+                { id: 'age', header: 'Âge', type: 'number', sortable: true, filterable: true },
+                { id: 'sexe', header: 'Genre', sortable: true, filterable: true },
+                { id: 'statut', header: 'Statut', sortable: true, filterable: true },
+                {
+                  id: 'fermeId',
+                  header: 'Ferme',
+                  sortable: true,
+                  filterable: true,
+                  cell: (worker: any) => {
+                    const ferme = fermes.find(f => f.id === worker.fermeId);
+                    return ferme ? ferme.nom : worker.fermeId;
+                  }
+                },
+                { id: 'chambre', header: 'Chambre', sortable: true, filterable: true },
+                { id: 'dateEntree', header: 'Date d\'entrée', type: 'date', sortable: true, filterable: true },
               ]}
 
               title="Liste des Ouvriers"
               description={`${workers.length} ouvriers au total`}
+              searchable={true}
+              filterable={true}
+              selectable={true}
+              exportable={true}
+              pagination={true}
+              pageSize={10}
             />
           </TabsContent>
 
@@ -3130,13 +3146,15 @@ export default function Statistics() {
             <ResponsiveDataTable
               data={rooms}
               columns={[
-                { id: 'numero', header: 'Numéro' },
-                { id: 'genre', header: 'Genre' },
-                { id: 'capaciteTotale', header: 'Capacité' },
-                { id: 'occupantsActuels', header: 'Occupants' },
+                { id: 'numero', header: 'Numéro', sortable: true, filterable: true },
+                { id: 'genre', header: 'Genre', sortable: true, filterable: true },
+                { id: 'capaciteTotale', header: 'Capacité', type: 'number', sortable: true, filterable: true },
+                { id: 'occupantsActuels', header: 'Occupants', type: 'number', sortable: true, filterable: true },
                 {
                   id: 'fermeId',
                   header: 'Ferme',
+                  sortable: true,
+                  filterable: true,
                   cell: (room: Room) => {
                     const ferme = fermes.find(f => f.id === room.fermeId);
                     return ferme ? ferme.nom : room.fermeId;
@@ -3146,6 +3164,12 @@ export default function Statistics() {
 
               title="Liste des Chambres"
               description={`${rooms.length} chambres au total`}
+              searchable={true}
+              filterable={true}
+              selectable={true}
+              exportable={true}
+              pagination={true}
+              pageSize={10}
             />
           </TabsContent>
 
@@ -3169,14 +3193,15 @@ export default function Statistics() {
                 };
               })}
               columns={[
-                { id: 'nom', header: 'Nom du Superviseur' },
-                { id: 'telephone', header: 'Téléphone' },
-                
-                { id: 'workerCount', header: 'Nombre d\'ouvriers' },
-                { id: 'percentage', header: 'Pourcentage' },
+                { id: 'nom', header: 'Nom du Superviseur', sortable: true, filterable: true },
+                { id: 'telephone', header: 'Téléphone', sortable: true, filterable: true },
+                { id: 'workerCount', header: 'Nombre d\'ouvriers', type: 'number', sortable: true, filterable: true },
+                { id: 'percentage', header: 'Pourcentage', sortable: true, filterable: true },
                 {
                   id: 'performance',
                   header: 'Performance',
+                  sortable: true,
+                  filterable: true,
                   cell: (supervisor: any) => (
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                       supervisor.performance === 'Excellent' ? 'bg-green-100 text-green-800' :
@@ -3191,6 +3216,12 @@ export default function Statistics() {
               ]}
               title="Liste des Superviseurs"
               description={`${supervisors.length} superviseurs au total`}
+              searchable={true}
+              filterable={true}
+              selectable={true}
+              exportable={true}
+              pagination={true}
+              pageSize={10}
             />
           </TabsContent>
         </Tabs>

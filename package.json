@@ -23,6 +23,9 @@
     "deploy:preview": "npm run build:client && firebase hosting:channel:deploy preview"
   },
   "dependencies": {
+    "@capacitor/android": "^7.4.2",
+    "@capacitor/cli": "^7.4.2",
+    "@capacitor/core": "^7.4.2",
     "@radix-ui/react-visually-hidden": "^1.2.3",
     "@types/nodemailer": "^6.4.17",
     "dotenv": "^17.2.0",

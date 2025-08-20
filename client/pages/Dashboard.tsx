@@ -250,6 +250,12 @@ export default function Dashboard() {
     const mostCommonMotif = Object.entries(motifCounts)
       .sort(([,a], [,b]) => b - a)[0];
 
+    // Get top 3 most common motifs
+    const top3Motifs = Object.entries(motifCounts)
+      .sort(([,a], [,b]) => b - a)
+      .slice(0, 3)
+      .map(([motif, count]) => ({ motif, count }));
+
     // Calculate average length of stay
     const staysWithDuration = exitedWorkers
       .filter(w => w.dateEntree && w.dateSortie)
@@ -309,6 +315,7 @@ export default function Dashboard() {
       exitPercentage,
       mostCommonMotif: mostCommonMotif ? mostCommonMotif[0] : 'Aucune sortie',
       mostCommonMotifCount: mostCommonMotif ? mostCommonMotif[1] : 0,
+      top3Motifs,
       averageLengthOfStay,
       averageActiveDays,
       returningWorkers: returningWorkers.length,
@@ -497,7 +504,7 @@ export default function Dashboard() {
                     <Label htmlFor="year-select-month">Année</Label>
                     <Select value={selectedYear} onValueChange={setSelectedYear}>
                       <SelectTrigger id="year-select-month">
-                        <SelectValue placeholder="Sélectionner une année" />
+                        <SelectValue placeholder="Sélectionner une ann��e" />
                       </SelectTrigger>
                       <SelectContent>
                         {Array.from({ length: 10 }, (_, i) => {
@@ -702,21 +709,40 @@ export default function Dashboard() {
           <CardHeader>
             <CardTitle className="flex items-center">
               <BarChart3 className="mr-2 h-5 w-5" />
-              Motif de sortie principal
+              Top 3 Motifs de sortie
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900">{stats.mostCommonMotif}</h3>
-                <p className="text-sm text-gray-600">
-                  {stats.mostCommonMotifCount} ouvrier{stats.mostCommonMotifCount > 1 ? 's' : ''} concerné{stats.mostCommonMotifCount > 1 ? 's' : ''}
-                </p>
-              </div>
-              <div className="text-right">
-                <div className="text-2xl font-bold text-purple-600">{stats.mostCommonMotifCount}</div>
-                <div className="text-xs text-gray-500">sorties</div>
-              </div>
+            <div className="space-y-3">
+              {stats.top3Motifs.length > 0 ? (
+                stats.top3Motifs.map((motifData, index) => (
+                  <div key={motifData.motif} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm ${
+                        index === 0 ? 'bg-purple-600' :
+                        index === 1 ? 'bg-purple-500' :
+                        'bg-purple-400'
+                      }`}>
+                        {index + 1}
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-900">{motifData.motif}</h4>
+                        <p className="text-sm text-gray-600">
+                          {motifData.count} ouvrier{motifData.count > 1 ? 's' : ''} concerné{motifData.count > 1 ? 's' : ''}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-lg font-bold text-purple-600">{motifData.count}</div>
+                      <div className="text-xs text-gray-500">sorties</div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-4 text-gray-500">
+                  Aucune sortie enregistrée
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>

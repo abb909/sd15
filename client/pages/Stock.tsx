@@ -116,6 +116,14 @@ export default function Stock() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
 
+  // Pagination for main inventory table
+  const [inventoryCurrentPage, setInventoryCurrentPage] = useState(1);
+  const inventoryItemsPerPage = 10;
+
+  // Pagination for transfers table
+  const [transfersCurrentPage, setTransfersCurrentPage] = useState(1);
+  const transfersItemsPerPage = 10;
+
   // Pagination for workers with LIT/EPONGE allocations
   const [workersCurrentPage, setWorkersCurrentPage] = useState(1);
   const workersItemsPerPage = 10;
@@ -123,6 +131,8 @@ export default function Stock() {
   // Reset workers pagination when filters change
   useEffect(() => {
     setWorkersCurrentPage(1);
+    setInventoryCurrentPage(1);
+    setTransfersCurrentPage(1);
   }, [selectedFerme, searchTerm]);
 
   // Calculate allocation counts for stock items
@@ -439,9 +449,23 @@ export default function Stock() {
   const endIndex = startIndex + itemsPerPage;
   const paginatedAggregatedStocks = aggregatedStocks.slice(startIndex, endIndex);
 
+  // Pagination for main inventory
+  const inventoryTotalPages = Math.ceil(filteredStocks.length / inventoryItemsPerPage);
+  const inventoryStartIndex = (inventoryCurrentPage - 1) * inventoryItemsPerPage;
+  const inventoryEndIndex = inventoryStartIndex + inventoryItemsPerPage;
+  const paginatedInventoryStocks = filteredStocks.slice(inventoryStartIndex, inventoryEndIndex);
+
+  // Pagination for transfers
+  const transfersTotalPages = Math.ceil(filteredTransfers.length / transfersItemsPerPage);
+  const transfersStartIndex = (transfersCurrentPage - 1) * transfersItemsPerPage;
+  const transfersEndIndex = transfersStartIndex + transfersItemsPerPage;
+  const paginatedTransfers = filteredTransfers.slice(transfersStartIndex, transfersEndIndex);
+
   // Reset to page 1 when search changes
   React.useEffect(() => {
     setCurrentPage(1);
+    setInventoryCurrentPage(1);
+    setTransfersCurrentPage(1);
   }, [searchTerm]);
 
   // Debug function to force fetch all articles
@@ -610,6 +634,28 @@ export default function Stock() {
   const handleDownloadInventory = () => {
     const wb = XLSX.utils.book_new();
 
+    // Add article summary sheet first (for both all farms and single farm views)
+    if (aggregatedStocks.length > 0) {
+      const summaryData = aggregatedStocks.map(aggregated => ({
+        'Article': aggregated.item,
+        'Quantité Totale': aggregated.totalQuantity,
+        'Unité': aggregated.unit,
+        'Nombre de Fermes': aggregated.farms.length,
+        'Dernière MAJ': formatDate(aggregated.lastUpdated)
+      }));
+
+      const summaryWs = XLSX.utils.json_to_sheet(summaryData);
+      const cols = [
+        { width: 30 }, // Article
+        { width: 20 }, // Quantité Totale
+        { width: 12 }, // Unité
+        { width: 18 }, // Nombre de Fermes
+        { width: 20 }  // Dernière MAJ
+      ];
+      summaryWs['!cols'] = cols;
+      XLSX.utils.book_append_sheet(wb, summaryWs, 'Totaux par Article');
+    }
+
     if ((isSuperAdmin || hasAllFarmsAccess) && selectedFerme === 'all') {
       // Create a sheet for each farm
       fermes.forEach(ferme => {
@@ -641,7 +687,7 @@ export default function Stock() {
         }
       });
 
-      // Add summary sheet
+      // Add detailed summary sheet
       const allStocksData = stocks.map(stock => ({
         'Ferme': getFermeName(stock.secteurId),
         'Article': stock.item,
@@ -1428,7 +1474,7 @@ export default function Stock() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredStocks.map((stock) => {
+                    {paginatedInventoryStocks.map((stock) => {
                       const allocationCounts = getAllocationCounts(stock.item, stock.secteurId);
                       const available = Math.max(0, stock.quantity - allocationCounts.allocated);
 
@@ -1476,6 +1522,55 @@ export default function Stock() {
                   </TableBody>
                 </Table>
               </div>
+
+              {/* Inventory Pagination Controls */}
+              {filteredStocks.length > inventoryItemsPerPage && (
+                <div className="flex items-center justify-between px-4 py-4 border-t border-gray-200">
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <span>
+                      Affichage {inventoryStartIndex + 1}-{Math.min(inventoryEndIndex, filteredStocks.length)} sur {filteredStocks.length} articles
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setInventoryCurrentPage(prev => Math.max(1, prev - 1))}
+                      disabled={inventoryCurrentPage === 1}
+                      className="flex items-center gap-1"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                      Précédent
+                    </Button>
+
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: inventoryTotalPages }, (_, i) => i + 1).map((page) => (
+                        <Button
+                          key={page}
+                          variant={inventoryCurrentPage === page ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setInventoryCurrentPage(page)}
+                          className="w-8 h-8 p-0"
+                        >
+                          {page}
+                        </Button>
+                      ))}
+                    </div>
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setInventoryCurrentPage(prev => Math.min(inventoryTotalPages, prev + 1))}
+                      disabled={inventoryCurrentPage === inventoryTotalPages}
+                      className="flex items-center gap-1"
+                    >
+                      Suivant
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -1505,7 +1600,7 @@ export default function Stock() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredTransfers.map((transfer) => {
+                    {paginatedTransfers.map((transfer) => {
                       const isIncoming = transfer.toFermeId === user?.fermeId;
                       const isOutgoing = transfer.fromFermeId === user?.fermeId;
 
@@ -1592,6 +1687,55 @@ export default function Stock() {
                   </TableBody>
                 </Table>
               </div>
+
+              {/* Transfers Pagination Controls */}
+              {filteredTransfers.length > transfersItemsPerPage && (
+                <div className="flex items-center justify-between px-4 py-4 border-t border-gray-200">
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <span>
+                      Affichage {transfersStartIndex + 1}-{Math.min(transfersEndIndex, filteredTransfers.length)} sur {filteredTransfers.length} transferts
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setTransfersCurrentPage(prev => Math.max(1, prev - 1))}
+                      disabled={transfersCurrentPage === 1}
+                      className="flex items-center gap-1"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                      Précédent
+                    </Button>
+
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: transfersTotalPages }, (_, i) => i + 1).map((page) => (
+                        <Button
+                          key={page}
+                          variant={transfersCurrentPage === page ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setTransfersCurrentPage(page)}
+                          className="w-8 h-8 p-0"
+                        >
+                          {page}
+                        </Button>
+                      ))}
+                    </div>
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setTransfersCurrentPage(prev => Math.min(transfersTotalPages, prev + 1))}
+                      disabled={transfersCurrentPage === transfersTotalPages}
+                      className="flex items-center gap-1"
+                    >
+                      Suivant
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
