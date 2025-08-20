@@ -1763,6 +1763,9 @@ export default function Stock() {
               <CardTitle className="flex items-center gap-2">
                 <Truck className="h-5 w-5" />
                 Transferts entre Fermes
+                <span className="text-sm font-normal text-gray-600">
+                  ({filteredTransfers.length} transfert{filteredTransfers.length > 1 ? 's' : ''})
+                </span>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -1781,7 +1784,7 @@ export default function Stock() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredTransfers.map((transfer) => {
+                    {paginatedTransfers.map((transfer) => {
                       const isIncoming = transfer.toFermeId === user?.fermeId;
                       const isOutgoing = transfer.fromFermeId === user?.fermeId;
 
@@ -1858,7 +1861,7 @@ export default function Stock() {
                         </TableRow>
                       );
                     })}
-                    {filteredTransfers.length === 0 && (
+                    {paginatedTransfers.length === 0 && (
                       <TableRow>
                         <TableCell colSpan={10} className="text-center py-8 text-gray-500">
                           Aucun transfert trouvé
@@ -1868,6 +1871,71 @@ export default function Stock() {
                   </TableBody>
                 </Table>
               </div>
+
+              {/* Pagination Controls for Transfers */}
+              {transfersTotalPages > 1 && (
+                <div className="flex items-center justify-between px-2 py-4 border-t border-gray-200">
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <span>
+                      Affichage {transfersStartIndex + 1}-{Math.min(transfersEndIndex, filteredTransfers.length)} sur {filteredTransfers.length} transferts
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setTransfersCurrentPage(prev => Math.max(1, prev - 1))}
+                      disabled={transfersCurrentPage === 1}
+                      className="flex items-center gap-1"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                      Précédent
+                    </Button>
+
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: Math.min(transfersTotalPages, 10) }, (_, i) => {
+                        let page;
+                        if (transfersTotalPages <= 10) {
+                          page = i + 1;
+                        } else {
+                          // Show first few, current page area, and last few
+                          if (transfersCurrentPage <= 5) {
+                            page = i + 1;
+                          } else if (transfersCurrentPage >= transfersTotalPages - 4) {
+                            page = transfersTotalPages - 9 + i;
+                          } else {
+                            page = transfersCurrentPage - 5 + i;
+                          }
+                        }
+
+                        return (
+                          <Button
+                            key={page}
+                            variant={transfersCurrentPage === page ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setTransfersCurrentPage(page)}
+                            className="w-8 h-8 p-0"
+                          >
+                            {page}
+                          </Button>
+                        );
+                      })}
+                    </div>
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setTransfersCurrentPage(prev => Math.min(transfersTotalPages, prev + 1))}
+                      disabled={transfersCurrentPage === transfersTotalPages}
+                      className="flex items-center gap-1"
+                    >
+                      Suivant
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
