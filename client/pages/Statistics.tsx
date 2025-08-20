@@ -3112,16 +3112,32 @@ export default function Statistics() {
             <ResponsiveDataTable
               data={workers}
               columns={[
-                { id: 'nom', header: 'Nom' },
-                { id: 'age', header: 'Âge' },
-                { id: 'sexe', header: 'Genre' },
-                { id: 'statut', header: 'Statut' },
-                { id: 'chambre', header: 'Chambre' },
-                { id: 'dateEntree', header: 'Date d\'entrée', type: 'date' },
+                { id: 'nom', header: 'Nom', sortable: true, filterable: true },
+                { id: 'age', header: 'Âge', type: 'number', sortable: true, filterable: true },
+                { id: 'sexe', header: 'Genre', sortable: true, filterable: true },
+                { id: 'statut', header: 'Statut', sortable: true, filterable: true },
+                {
+                  id: 'fermeId',
+                  header: 'Ferme',
+                  sortable: true,
+                  filterable: true,
+                  cell: (worker: any) => {
+                    const ferme = fermes.find(f => f.id === worker.fermeId);
+                    return ferme ? ferme.nom : worker.fermeId;
+                  }
+                },
+                { id: 'chambre', header: 'Chambre', sortable: true, filterable: true },
+                { id: 'dateEntree', header: 'Date d\'entrée', type: 'date', sortable: true, filterable: true },
               ]}
 
               title="Liste des Ouvriers"
               description={`${workers.length} ouvriers au total`}
+              searchable={true}
+              filterable={true}
+              selectable={true}
+              exportable={true}
+              pagination={true}
+              pageSize={10}
             />
           </TabsContent>
 
