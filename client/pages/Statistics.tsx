@@ -3456,8 +3456,10 @@ function EnhancedWorkersTable({ workers, fermes, isSuperAdmin, hasAllFarmsAccess
 
   // Sort indicator component
   const SortIndicator = ({ column }: { column: string }) => {
-    if (sortColumn !== column) return null;
-    return sortDirection === 'asc' ? ' ↑' : ' ↓';
+    if (sortColumn !== column) return <ChevronsUpDown className="ml-2 h-4 w-4" />;
+    return sortDirection === 'asc' ?
+      <ChevronUp className="ml-2 h-4 w-4" /> :
+      <ChevronDown className="ml-2 h-4 w-4" />;
   };
 
   // Export to Excel function
