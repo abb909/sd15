@@ -1687,6 +1687,55 @@ export default function Stock() {
                   </TableBody>
                 </Table>
               </div>
+
+              {/* Transfers Pagination Controls */}
+              {filteredTransfers.length > transfersItemsPerPage && (
+                <div className="flex items-center justify-between px-4 py-4 border-t border-gray-200">
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <span>
+                      Affichage {transfersStartIndex + 1}-{Math.min(transfersEndIndex, filteredTransfers.length)} sur {filteredTransfers.length} transferts
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setTransfersCurrentPage(prev => Math.max(1, prev - 1))}
+                      disabled={transfersCurrentPage === 1}
+                      className="flex items-center gap-1"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                      Précédent
+                    </Button>
+
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: transfersTotalPages }, (_, i) => i + 1).map((page) => (
+                        <Button
+                          key={page}
+                          variant={transfersCurrentPage === page ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setTransfersCurrentPage(page)}
+                          className="w-8 h-8 p-0"
+                        >
+                          {page}
+                        </Button>
+                      ))}
+                    </div>
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setTransfersCurrentPage(prev => Math.min(transfersTotalPages, prev + 1))}
+                      disabled={transfersCurrentPage === transfersTotalPages}
+                      className="flex items-center gap-1"
+                    >
+                      Suivant
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
