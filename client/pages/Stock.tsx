@@ -578,7 +578,7 @@ export default function Stock() {
       if (quantityChange !== 0 && !addForm.notes) {
         updateNotes = quantityChange > 0
           ? `Quantité augmentée de ${quantityChange} le ${new Date().toLocaleDateString('fr-FR')} (${oldQuantity} → ${newQuantity})`
-          : `Quantité r��duite de ${Math.abs(quantityChange)} le ${new Date().toLocaleDateString('fr-FR')} (${oldQuantity} → ${newQuantity})`;
+          : `Quantité réduite de ${Math.abs(quantityChange)} le ${new Date().toLocaleDateString('fr-FR')} (${oldQuantity} → ${newQuantity})`;
       }
 
       await updateDoc(stockRef, {
@@ -1474,7 +1474,7 @@ export default function Stock() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredStocks.map((stock) => {
+                    {paginatedInventoryStocks.map((stock) => {
                       const allocationCounts = getAllocationCounts(stock.item, stock.secteurId);
                       const available = Math.max(0, stock.quantity - allocationCounts.allocated);
 
