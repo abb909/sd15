@@ -315,6 +315,7 @@ export default function Dashboard() {
       exitPercentage,
       mostCommonMotif: mostCommonMotif ? mostCommonMotif[0] : 'Aucune sortie',
       mostCommonMotifCount: mostCommonMotif ? mostCommonMotif[1] : 0,
+      top3Motifs,
       averageLengthOfStay,
       averageActiveDays,
       returningWorkers: returningWorkers.length,
