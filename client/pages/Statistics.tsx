@@ -3330,3 +3330,503 @@ export default function Statistics() {
     </div>
   );
 }
+
+// Enhanced Workers Table Component with Excel-like features
+interface EnhancedWorkersTableProps {
+  workers: Worker[];
+  fermes: Ferme[];
+  isSuperAdmin: boolean;
+  hasAllFarmsAccess: boolean;
+}
+
+function EnhancedWorkersTable({ workers, fermes, isSuperAdmin, hasAllFarmsAccess }: EnhancedWorkersTableProps) {
+  // State for filtering and pagination
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedFerme, setSelectedFerme] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [genderFilter, setGenderFilter] = useState('all');
+  const [ageFilter, setAgeFilter] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [sortColumn, setSortColumn] = useState<string>('');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const itemsPerPage = 10;
+
+  // Get ferme name helper
+  const getFermeName = (fermeId: string) => {
+    const ferme = fermes.find(f => f.id === fermeId);
+    return ferme?.nom || fermeId;
+  };
+
+  // Filtered and sorted data
+  const filteredWorkers = useMemo(() => {
+    let filtered = workers.filter(worker => {
+      const matchesSearch = worker.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           (worker.matricule && worker.matricule.toLowerCase().includes(searchTerm.toLowerCase()));
+      const matchesFerme = selectedFerme === 'all' || worker.fermeId === selectedFerme;
+      const matchesStatus = statusFilter === 'all' || worker.statut === statusFilter;
+      const matchesGender = genderFilter === 'all' || worker.sexe === genderFilter;
+      const matchesAge = ageFilter === '' ||
+                        worker.age >= parseInt(ageFilter) ||
+                        worker.age.toString().includes(ageFilter);
+
+      return matchesSearch && matchesFerme && matchesStatus && matchesGender && matchesAge;
+    });
+
+    // Apply sorting
+    if (sortColumn) {
+      filtered.sort((a, b) => {
+        let aValue: any;
+        let bValue: any;
+
+        switch (sortColumn) {
+          case 'nom':
+            aValue = a.nom.toLowerCase();
+            bValue = b.nom.toLowerCase();
+            break;
+          case 'age':
+            aValue = a.age;
+            bValue = b.age;
+            break;
+          case 'sexe':
+            aValue = a.sexe.toLowerCase();
+            bValue = b.sexe.toLowerCase();
+            break;
+          case 'statut':
+            aValue = a.statut.toLowerCase();
+            bValue = b.statut.toLowerCase();
+            break;
+          case 'ferme':
+            aValue = getFermeName(a.fermeId).toLowerCase();
+            bValue = getFermeName(b.fermeId).toLowerCase();
+            break;
+          case 'chambre':
+            aValue = a.chambre || '';
+            bValue = b.chambre || '';
+            break;
+          case 'matricule':
+            aValue = a.matricule || '';
+            bValue = b.matricule || '';
+            break;
+          case 'dateEntree':
+            aValue = new Date(a.dateEntree || '').getTime();
+            bValue = new Date(b.dateEntree || '').getTime();
+            break;
+          default:
+            return 0;
+        }
+
+        if (typeof aValue === 'string') {
+          return sortDirection === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
+        } else {
+          return sortDirection === 'asc' ? aValue - bValue : bValue - aValue;
+        }
+      });
+    }
+
+    return filtered;
+  }, [workers, searchTerm, selectedFerme, statusFilter, genderFilter, ageFilter, sortColumn, sortDirection]);
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredWorkers.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedWorkers = filteredWorkers.slice(startIndex, endIndex);
+
+  // Get unique values for filters
+  const uniqueStatuses = [...new Set(workers.map(w => w.statut))];
+  const uniqueGenders = [...new Set(workers.map(w => w.sexe))];
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedFerme, statusFilter, genderFilter, ageFilter]);
+
+  // Handle column sorting
+  const handleSort = (column: string) => {
+    if (sortColumn === column) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortColumn(column);
+      setSortDirection('asc');
+    }
+  };
+
+  // Sort indicator component
+  const SortIndicator = ({ column }: { column: string }) => {
+    if (sortColumn !== column) return null;
+    return sortDirection === 'asc' ? ' ↑' : ' ↓';
+  };
+
+  // Export to Excel function
+  const handleExportExcel = () => {
+    const exportData = filteredWorkers.map(worker => ({
+      'Matricule': worker.matricule || '',
+      'Nom': worker.nom,
+      'Âge': worker.age,
+      'Genre': worker.sexe,
+      'Statut': worker.statut,
+      'Ferme': getFermeName(worker.fermeId),
+      'Chambre': worker.chambre || '',
+      'Date d\'entrée': worker.dateEntree ? new Date(worker.dateEntree).toLocaleDateString('fr-FR') : '',
+      'Date de sortie': worker.dateSortie ? new Date(worker.dateSortie).toLocaleDateString('fr-FR') : '',
+      'Téléphone': worker.telephone || '',
+      'Superviseur': worker.supervisorId || ''
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    const wb = XLSX.utils.book_new();
+
+    // Set column widths
+    const cols = [
+      { width: 15 }, // Matricule
+      { width: 25 }, // Nom
+      { width: 10 }, // Âge
+      { width: 10 }, // Genre
+      { width: 15 }, // Statut
+      { width: 20 }, // Ferme
+      { width: 15 }, // Chambre
+      { width: 15 }, // Date d'entrée
+      { width: 15 }, // Date de sortie
+      { width: 15 }, // Téléphone
+      { width: 20 }  // Superviseur
+    ];
+    ws['!cols'] = cols;
+
+    XLSX.utils.book_append_sheet(wb, ws, 'Ouvriers');
+
+    const currentDate = new Date().toISOString().split('T')[0];
+    const farmSuffix = selectedFerme === 'all' ? 'tous' : getFermeName(selectedFerme).replace(/[^\w]/g, '_');
+    const filename = `ouvriers_${farmSuffix}_${currentDate}.xlsx`;
+
+    XLSX.writeFile(wb, filename);
+  };
+
+  // Export All Matricule function
+  const handleExportAllMatricule = () => {
+    const matriculeData = filteredWorkers
+      .filter(worker => worker.matricule)
+      .map(worker => ({
+        'Matricule': worker.matricule,
+        'Nom': worker.nom,
+        'Ferme': getFermeName(worker.fermeId)
+      }));
+
+    const ws = XLSX.utils.json_to_sheet(matriculeData);
+    const wb = XLSX.utils.book_new();
+
+    // Set column widths
+    const cols = [
+      { width: 20 }, // Matricule
+      { width: 30 }, // Nom
+      { width: 20 }  // Ferme
+    ];
+    ws['!cols'] = cols;
+
+    XLSX.utils.book_append_sheet(wb, ws, 'Matricules');
+
+    const currentDate = new Date().toISOString().split('T')[0];
+    const farmSuffix = selectedFerme === 'all' ? 'tous' : getFermeName(selectedFerme).replace(/[^\w]/g, '_');
+    const filename = `matricules_${farmSuffix}_${currentDate}.xlsx`;
+
+    XLSX.writeFile(wb, filename);
+  };
+
+  // Format date function
+  const formatDate = (dateString: string) => {
+    if (!dateString) return '-';
+    return new Date(dateString).toLocaleDateString('fr-FR');
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Users className="h-5 w-5" />
+          Liste des Ouvriers
+          <span className="text-sm font-normal text-gray-600">
+            ({filteredWorkers.length} ouvrier{filteredWorkers.length > 1 ? 's' : ''})
+          </span>
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {/* Filters and Export Buttons */}
+        <div className="space-y-4 mb-6">
+          {/* Primary Filters */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+              <Label htmlFor="search">Rechercher</Label>
+              <div className="relative">
+                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <Input
+                  id="search"
+                  placeholder="Nom ou matricule..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
+
+            {(isSuperAdmin || hasAllFarmsAccess) && (
+              <div>
+                <Label htmlFor="ferme">Ferme</Label>
+                <Select value={selectedFerme} onValueChange={setSelectedFerme}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Toutes les fermes" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Toutes les fermes</SelectItem>
+                    {fermes.map(ferme => (
+                      <SelectItem key={ferme.id} value={ferme.id}>
+                        {ferme.nom}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            <div>
+              <Label htmlFor="status">Statut</Label>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Tous les statuts" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Tous les statuts</SelectItem>
+                  {uniqueStatuses.map(status => (
+                    <SelectItem key={status} value={status}>
+                      {status}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="gender">Genre</Label>
+              <Select value={genderFilter} onValueChange={setGenderFilter}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Tous les genres" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Tous les genres</SelectItem>
+                  {uniqueGenders.map(gender => (
+                    <SelectItem key={gender} value={gender}>
+                      {gender}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Advanced Filters and Export Buttons */}
+          <div className="border-t pt-4">
+            <h4 className="text-sm font-medium text-gray-700 mb-3">Actions et Filtres Avancés</h4>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div>
+                <Label htmlFor="age-filter">Âge Min.</Label>
+                <Input
+                  id="age-filter"
+                  placeholder="ex: 25"
+                  type="number"
+                  value={ageFilter}
+                  onChange={(e) => setAgeFilter(e.target.value)}
+                />
+              </div>
+
+              <div className="flex items-end">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setSearchTerm('');
+                    setSelectedFerme('all');
+                    setStatusFilter('all');
+                    setGenderFilter('all');
+                    setAgeFilter('');
+                    setSortColumn('');
+                    setSortDirection('asc');
+                  }}
+                  className="w-full"
+                >
+                  Réinitialiser
+                </Button>
+              </div>
+
+              <div className="flex items-end">
+                <Button
+                  onClick={handleExportExcel}
+                  className="w-full bg-green-600 hover:bg-green-700"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Export Excel
+                </Button>
+              </div>
+
+              <div className="flex items-end">
+                <Button
+                  onClick={handleExportAllMatricule}
+                  variant="outline"
+                  className="w-full"
+                >
+                  <IdCard className="h-4 w-4 mr-2" />
+                  Tous Matricules
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Workers Table */}
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead
+                  className="cursor-pointer hover:bg-gray-100"
+                  onClick={() => handleSort('matricule')}
+                >
+                  Matricule <SortIndicator column="matricule" />
+                </TableHead>
+                <TableHead
+                  className="cursor-pointer hover:bg-gray-100"
+                  onClick={() => handleSort('nom')}
+                >
+                  Nom <SortIndicator column="nom" />
+                </TableHead>
+                <TableHead
+                  className="cursor-pointer hover:bg-gray-100"
+                  onClick={() => handleSort('age')}
+                >
+                  Âge <SortIndicator column="age" />
+                </TableHead>
+                <TableHead
+                  className="cursor-pointer hover:bg-gray-100"
+                  onClick={() => handleSort('sexe')}
+                >
+                  Genre <SortIndicator column="sexe" />
+                </TableHead>
+                <TableHead
+                  className="cursor-pointer hover:bg-gray-100"
+                  onClick={() => handleSort('statut')}
+                >
+                  Statut <SortIndicator column="statut" />
+                </TableHead>
+                <TableHead
+                  className="cursor-pointer hover:bg-gray-100"
+                  onClick={() => handleSort('ferme')}
+                >
+                  Ferme <SortIndicator column="ferme" />
+                </TableHead>
+                <TableHead
+                  className="cursor-pointer hover:bg-gray-100"
+                  onClick={() => handleSort('chambre')}
+                >
+                  Chambre <SortIndicator column="chambre" />
+                </TableHead>
+                <TableHead
+                  className="cursor-pointer hover:bg-gray-100"
+                  onClick={() => handleSort('dateEntree')}
+                >
+                  Date d'entrée <SortIndicator column="dateEntree" />
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {paginatedWorkers.map((worker) => (
+                <TableRow key={worker.id}>
+                  <TableCell className="font-mono text-sm">
+                    {worker.matricule || '-'}
+                  </TableCell>
+                  <TableCell className="font-medium">{worker.nom}</TableCell>
+                  <TableCell>{worker.age}</TableCell>
+                  <TableCell>{worker.sexe}</TableCell>
+                  <TableCell>
+                    <Badge variant={worker.statut === 'actif' ? 'default' : 'secondary'}>
+                      {worker.statut}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="font-medium">{getFermeName(worker.fermeId)}</TableCell>
+                  <TableCell>{worker.chambre || '-'}</TableCell>
+                  <TableCell>{formatDate(worker.dateEntree)}</TableCell>
+                </TableRow>
+              ))}
+              {paginatedWorkers.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={8} className="text-center py-8 text-gray-500">
+                    Aucun ouvrier trouvé
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between px-2 py-4 border-t border-gray-200">
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <span>
+                Affichage {startIndex + 1}-{Math.min(endIndex, filteredWorkers.length)} sur {filteredWorkers.length} ouvriers
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+                className="flex items-center gap-1"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Précédent
+              </Button>
+
+              <div className="flex items-center gap-1">
+                {Array.from({ length: Math.min(totalPages, 10) }, (_, i) => {
+                  let page;
+                  if (totalPages <= 10) {
+                    page = i + 1;
+                  } else {
+                    if (currentPage <= 5) {
+                      page = i + 1;
+                    } else if (currentPage >= totalPages - 4) {
+                      page = totalPages - 9 + i;
+                    } else {
+                      page = currentPage - 5 + i;
+                    }
+                  }
+
+                  return (
+                    <Button
+                      key={page}
+                      variant={currentPage === page ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setCurrentPage(page)}
+                      className="w-8 h-8 p-0"
+                    >
+                      {page}
+                    </Button>
+                  );
+                })}
+              </div>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages}
+                className="flex items-center gap-1"
+              >
+                Suivant
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
