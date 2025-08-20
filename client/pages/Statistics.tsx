@@ -3559,7 +3559,6 @@ function EnhancedWorkersTable({ workers, fermes, isSuperAdmin, hasAllFarmsAccess
           {/* Primary Filters */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
-              <Label htmlFor="search">Rechercher</Label>
               <div className="relative">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                 <Input
@@ -3574,7 +3573,6 @@ function EnhancedWorkersTable({ workers, fermes, isSuperAdmin, hasAllFarmsAccess
 
             {(isSuperAdmin || hasAllFarmsAccess) && (
               <div>
-                <Label htmlFor="ferme">Ferme</Label>
                 <Select value={selectedFerme} onValueChange={setSelectedFerme}>
                   <SelectTrigger>
                     <SelectValue placeholder="Toutes les fermes" />
@@ -3592,7 +3590,6 @@ function EnhancedWorkersTable({ workers, fermes, isSuperAdmin, hasAllFarmsAccess
             )}
 
             <div>
-              <Label htmlFor="status">Statut</Label>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger>
                   <SelectValue placeholder="Tous les statuts" />
@@ -3609,7 +3606,6 @@ function EnhancedWorkersTable({ workers, fermes, isSuperAdmin, hasAllFarmsAccess
             </div>
 
             <div>
-              <Label htmlFor="gender">Genre</Label>
               <Select value={genderFilter} onValueChange={setGenderFilter}>
                 <SelectTrigger>
                   <SelectValue placeholder="Tous les genres" />
@@ -3628,7 +3624,6 @@ function EnhancedWorkersTable({ workers, fermes, isSuperAdmin, hasAllFarmsAccess
 
           {/* Advanced Filters and Export Buttons */}
           <div className="border-t pt-4">
-            <h4 className="text-sm font-medium text-gray-700 mb-3">Actions et Filtres Avancés</h4>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="flex items-end">
                 <Button
