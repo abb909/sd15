@@ -131,6 +131,8 @@ export default function Stock() {
   // Reset workers pagination when filters change
   useEffect(() => {
     setWorkersCurrentPage(1);
+    setInventoryCurrentPage(1);
+    setTransfersCurrentPage(1);
   }, [selectedFerme, searchTerm]);
 
   // Calculate allocation counts for stock items
@@ -692,7 +694,7 @@ export default function Stock() {
           { width: 20 }  // Dernière mise à jour
         ];
         summaryWs['!cols'] = cols;
-        XLSX.utils.book_append_sheet(wb, summaryWs, 'Résumé Global');
+        XLSX.utils.book_append_sheet(wb, summaryWs, 'R��sumé Global');
       }
     } else {
       // Single farm or filtered view
@@ -2028,7 +2030,7 @@ export default function Stock() {
               {editingItem ? 'Modifier l\'Article' : 'Ajouter un Article'}
             </DialogTitle>
             <DialogDescription>
-              {editingItem ? 'Modifiez les informations de l\'article.' : 'Ajoutez un nouvel article �� l\'inventaire.'}
+              {editingItem ? 'Modifiez les informations de l\'article.' : 'Ajoutez un nouvel article à l\'inventaire.'}
             </DialogDescription>
           </DialogHeader>
 
