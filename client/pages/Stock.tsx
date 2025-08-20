@@ -1336,52 +1336,122 @@ export default function Stock() {
       {/* Filters */}
       <Card>
         <CardContent className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <Label htmlFor="search">Rechercher</Label>
-              <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <Input
-                  id="search"
-                  placeholder="Nom de l'article..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </div>
-
-            {(isSuperAdmin || hasAllFarmsAccess) && (
+          <div className="space-y-4">
+            {/* Primary Filters */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <Label htmlFor="ferme">Ferme</Label>
-                <Select value={selectedFerme} onValueChange={setSelectedFerme}>
+                <Label htmlFor="search">Rechercher</Label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <Input
+                    id="search"
+                    placeholder="Nom de l'article..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+
+              {(isSuperAdmin || hasAllFarmsAccess) && (
+                <div>
+                  <Label htmlFor="ferme">Ferme</Label>
+                  <Select value={selectedFerme} onValueChange={setSelectedFerme}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Toutes les fermes" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Toutes les fermes</SelectItem>
+                      {fermes.map(ferme => (
+                        <SelectItem key={ferme.id} value={ferme.id}>
+                          {ferme.nom}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              <div>
+                <Label htmlFor="tab">Vue</Label>
+                <Select value={activeTab} onValueChange={setActiveTab}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Toutes les fermes" />
+                    <SelectValue placeholder="Sélectionner une vue" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Toutes les fermes</SelectItem>
-                    {fermes.map(ferme => (
-                      <SelectItem key={ferme.id} value={ferme.id}>
-                        {ferme.nom}
-                      </SelectItem>
-                    ))}
+                    <SelectItem value="inventory">Inventaire</SelectItem>
+                    <SelectItem value="transfers">Transferts</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-            )}
-
-            <div>
-              <Label htmlFor="tab">Vue</Label>
-              <Select value={activeTab} onValueChange={setActiveTab}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Sélectionner une vue" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="inventory">Inventaire</SelectItem>
-                  <SelectItem value="transfers">Transferts</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
+
+            {/* Advanced Filters - Only show for inventory tab */}
+            {activeTab === 'inventory' && (
+              <div className="border-t pt-4">
+                <h4 className="text-sm font-medium text-gray-700 mb-3">Filtres Avancés</h4>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div>
+                    <Label htmlFor="quantity-filter">Quantité Min.</Label>
+                    <Input
+                      id="quantity-filter"
+                      placeholder="ex: 10"
+                      type="number"
+                      value={quantityFilter}
+                      onChange={(e) => setQuantityFilter(e.target.value)}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="unit-filter">Unité</Label>
+                    <Select value={unitFilter} onValueChange={setUnitFilter}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Toutes les unités" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Toutes les unités</SelectItem>
+                        {uniqueUnits.map(unit => (
+                          <SelectItem key={unit} value={unit}>
+                            {unit}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="availability-filter">Disponibilité</Label>
+                    <Select value={availabilityFilter} onValueChange={setAvailabilityFilter}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Tous les stocks" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Tous les stocks</SelectItem>
+                        <SelectItem value="available">Disponibles (&gt;0)</SelectItem>
+                        <SelectItem value="low">Stock Faible (1-5)</SelectItem>
+                        <SelectItem value="unavailable">Indisponibles (0)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="flex items-end">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setQuantityFilter('');
+                        setUnitFilter('all');
+                        setAvailabilityFilter('all');
+                        setSortColumn('');
+                        setSortDirection('asc');
+                      }}
+                      className="w-full"
+                    >
+                      Réinitialiser Filtres
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
