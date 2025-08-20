@@ -116,6 +116,14 @@ export default function Stock() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
 
+  // Pagination for main inventory table
+  const [inventoryCurrentPage, setInventoryCurrentPage] = useState(1);
+  const inventoryItemsPerPage = 10;
+
+  // Pagination for transfers table
+  const [transfersCurrentPage, setTransfersCurrentPage] = useState(1);
+  const transfersItemsPerPage = 10;
+
   // Pagination for workers with LIT/EPONGE allocations
   const [workersCurrentPage, setWorkersCurrentPage] = useState(1);
   const workersItemsPerPage = 10;
@@ -2020,7 +2028,7 @@ export default function Stock() {
               {editingItem ? 'Modifier l\'Article' : 'Ajouter un Article'}
             </DialogTitle>
             <DialogDescription>
-              {editingItem ? 'Modifiez les informations de l\'article.' : 'Ajoutez un nouvel article à l\'inventaire.'}
+              {editingItem ? 'Modifiez les informations de l\'article.' : 'Ajoutez un nouvel article �� l\'inventaire.'}
             </DialogDescription>
           </DialogHeader>
 
