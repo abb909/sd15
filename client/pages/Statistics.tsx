@@ -13,13 +13,15 @@ import { ResponsiveDataTable } from '@/components/ResponsiveDataTable';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { AdvancedSearch } from '@/components/AdvancedSearch';
 import { SimpleLayout } from '@/components/SimpleLayout';
-import { 
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Dialog,
   DialogContent,
