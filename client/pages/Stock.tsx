@@ -367,6 +367,14 @@ export default function Stock() {
     }
   }, [user, isSuperAdmin, hasAllFarmsAccess]);
 
+  // Get ferme name
+  const getFermeName = (fermeId: string) => {
+    if (fermeId === 'centralE') return 'centrale';
+    const ferme = fermes.find(f => f.id === fermeId);
+    // For superadmin or users with all farms access, if farm is unknown, default to 'centrale'
+    return ferme?.nom || (isSuperAdmin || hasAllFarmsAccess ? 'centrale' : 'centrale');
+  };
+
   // Filtered and sorted data
   const filteredStocks = useMemo(() => {
     let filtered = stocks.filter(stock => {
