@@ -1591,6 +1591,9 @@ export default function Stock() {
               <CardTitle className="flex items-center gap-2">
                 <Package className="h-5 w-5" />
                 Inventaire
+                <span className="text-sm font-normal text-gray-600">
+                  ({filteredStocks.length} article{filteredStocks.length > 1 ? 's' : ''})
+                </span>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -1598,18 +1601,45 @@ export default function Stock() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Article</TableHead>
-                      <TableHead>Quantité</TableHead>
+                      <TableHead
+                        className="cursor-pointer hover:bg-gray-100"
+                        onClick={() => handleSort('item')}
+                      >
+                        Article <SortIndicator column="item" />
+                      </TableHead>
+                      <TableHead
+                        className="cursor-pointer hover:bg-gray-100"
+                        onClick={() => handleSort('quantity')}
+                      >
+                        Quantité <SortIndicator column="quantity" />
+                      </TableHead>
                       <TableHead>Alloué</TableHead>
-                      <TableHead>Disponible</TableHead>
-                      {(isSuperAdmin || hasAllFarmsAccess) && <TableHead>Ferme</TableHead>}
+                      <TableHead
+                        className="cursor-pointer hover:bg-gray-100"
+                        onClick={() => handleSort('available')}
+                      >
+                        Disponible <SortIndicator column="available" />
+                      </TableHead>
+                      {(isSuperAdmin || hasAllFarmsAccess) && (
+                        <TableHead
+                          className="cursor-pointer hover:bg-gray-100"
+                          onClick={() => handleSort('ferme')}
+                        >
+                          Ferme <SortIndicator column="ferme" />
+                        </TableHead>
+                      )}
                       <TableHead>Notes</TableHead>
-                      <TableHead>Dernière MAJ</TableHead>
+                      <TableHead
+                        className="cursor-pointer hover:bg-gray-100"
+                        onClick={() => handleSort('lastUpdated')}
+                      >
+                        Dernière MAJ <SortIndicator column="lastUpdated" />
+                      </TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredStocks.map((stock) => {
+                    {paginatedInventoryStocks.map((stock) => {
                       const allocationCounts = getAllocationCounts(stock.item, stock.secteurId);
                       const available = Math.max(0, stock.quantity - allocationCounts.allocated);
 
@@ -1647,7 +1677,7 @@ export default function Stock() {
                         </TableRow>
                       );
                     })}
-                    {filteredStocks.length === 0 && (
+                    {paginatedInventoryStocks.length === 0 && (
                       <TableRow>
                         <TableCell colSpan={(isSuperAdmin || hasAllFarmsAccess) ? 8 : 7} className="text-center py-8 text-gray-500">
                           Aucun article trouvé
@@ -1657,6 +1687,71 @@ export default function Stock() {
                   </TableBody>
                 </Table>
               </div>
+
+              {/* Pagination Controls for Inventory */}
+              {inventoryTotalPages > 1 && (
+                <div className="flex items-center justify-between px-2 py-4 border-t border-gray-200">
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <span>
+                      Affichage {inventoryStartIndex + 1}-{Math.min(inventoryEndIndex, filteredStocks.length)} sur {filteredStocks.length} articles
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setInventoryCurrentPage(prev => Math.max(1, prev - 1))}
+                      disabled={inventoryCurrentPage === 1}
+                      className="flex items-center gap-1"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                      Précédent
+                    </Button>
+
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: Math.min(inventoryTotalPages, 10) }, (_, i) => {
+                        let page;
+                        if (inventoryTotalPages <= 10) {
+                          page = i + 1;
+                        } else {
+                          // Show first few, current page area, and last few
+                          if (inventoryCurrentPage <= 5) {
+                            page = i + 1;
+                          } else if (inventoryCurrentPage >= inventoryTotalPages - 4) {
+                            page = inventoryTotalPages - 9 + i;
+                          } else {
+                            page = inventoryCurrentPage - 5 + i;
+                          }
+                        }
+
+                        return (
+                          <Button
+                            key={page}
+                            variant={inventoryCurrentPage === page ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setInventoryCurrentPage(page)}
+                            className="w-8 h-8 p-0"
+                          >
+                            {page}
+                          </Button>
+                        );
+                      })}
+                    </div>
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setInventoryCurrentPage(prev => Math.min(inventoryTotalPages, prev + 1))}
+                      disabled={inventoryCurrentPage === inventoryTotalPages}
+                      className="flex items-center gap-1"
+                    >
+                      Suivant
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
