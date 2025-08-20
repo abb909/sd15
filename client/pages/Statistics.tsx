@@ -3109,19 +3109,11 @@ export default function Statistics() {
 
           {/* Workers Tab */}
           <TabsContent value="workers" className="space-y-6">
-            <ResponsiveDataTable
-              data={workers}
-              columns={[
-                { id: 'nom', header: 'Nom' },
-                { id: 'age', header: 'Âge' },
-                { id: 'sexe', header: 'Genre' },
-                { id: 'statut', header: 'Statut' },
-                { id: 'chambre', header: 'Chambre' },
-                { id: 'dateEntree', header: 'Date d\'entrée', type: 'date' },
-              ]}
-
-              title="Liste des Ouvriers"
-              description={`${workers.length} ouvriers au total`}
+            <EnhancedWorkersTable
+              workers={workers}
+              fermes={fermes}
+              isSuperAdmin={isSuperAdmin}
+              hasAllFarmsAccess={hasAllFarmsAccess}
             />
           </TabsContent>
 
