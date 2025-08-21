@@ -3154,47 +3154,77 @@ export default function Statistics() {
 
           {/* Supervisors Tab */}
           <TabsContent value="supervisors" className="space-y-6">
-            <ResponsiveDataTable
-              data={supervisors.map(supervisor => {
-                const activeWorkers = workers.filter(w => w.statut === 'actif');
-                const workersUnderSupervisor = activeWorkers.filter(w => w.supervisorId === supervisor.id);
-                const workerCount = workersUnderSupervisor.length;
-                const percentage = activeWorkers.length > 0 ? Math.round((workerCount / activeWorkers.length) * 100) : 0;
+            {supervisors.length === 0 ? (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Liste des Superviseurs</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center py-8">
+                    <Shield className="mx-auto h-12 w-12 text-gray-300 mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">Aucun superviseur trouvé</h3>
+                    <p className="text-gray-600">
+                      Il n'y a actuellement aucun superviseur dans la base de données.
+                    </p>
+                    <Button
+                      className="mt-4"
+                      onClick={() => {
+                        console.log('Supervisors debug info:', {
+                          supervisorsCount: supervisors.length,
+                          supervisors: supervisors,
+                          workersCount: workers.length,
+                          hasWorkersWithSupervisors: workers.filter(w => w.supervisorId).length
+                        });
+                      }}
+                    >
+                      Débugger les superviseurs
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <ResponsiveDataTable
+                data={supervisors.map(supervisor => {
+                  const activeWorkers = workers.filter(w => w.statut === 'actif');
+                  const workersUnderSupervisor = activeWorkers.filter(w => w.supervisorId === supervisor.id);
+                  const workerCount = workersUnderSupervisor.length;
+                  const percentage = activeWorkers.length > 0 ? Math.round((workerCount / activeWorkers.length) * 100) : 0;
 
-                return {
-                  id: supervisor.id,
-                  nom: supervisor.nom,
-                  telephone: supervisor.telephone,
-                  workerCount,
-                  percentage: `${percentage}%`,
-                  performance: workerCount > 10 ? 'Excellent' : workerCount > 5 ? 'Bon' : workerCount > 0 ? 'Acceptable' : 'Inactif'
-                  
-                };
-              })}
-              columns={[
-                { id: 'nom', header: 'Nom du Superviseur' },
-                { id: 'telephone', header: 'Téléphone' },
-                
-                { id: 'workerCount', header: 'Nombre d\'ouvriers' },
-                { id: 'percentage', header: 'Pourcentage' },
-                {
-                  id: 'performance',
-                  header: 'Performance',
-                  cell: (supervisor: any) => (
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      supervisor.performance === 'Excellent' ? 'bg-green-100 text-green-800' :
-                      supervisor.performance === 'Bon' ? 'bg-blue-100 text-blue-800' :
-                      supervisor.performance === 'Acceptable' ? 'bg-yellow-100 text-yellow-800' :
-                      'bg-gray-100 text-gray-800'
-                    }`}>
-                      {supervisor.performance}
-                    </span>
-                  )
-                }
-              ]}
-              title="Liste des Superviseurs"
-              description={`${supervisors.length} superviseurs au total`}
-            />
+                  return {
+                    id: supervisor.id,
+                    nom: supervisor.nom,
+                    telephone: supervisor.telephone,
+                    workerCount,
+                    percentage: `${percentage}%`,
+                    performance: workerCount > 10 ? 'Excellent' : workerCount > 5 ? 'Bon' : workerCount > 0 ? 'Acceptable' : 'Inactif'
+
+                  };
+                })}
+                columns={[
+                  { id: 'nom', header: 'Nom du Superviseur' },
+                  { id: 'telephone', header: 'Téléphone' },
+
+                  { id: 'workerCount', header: 'Nombre d\'ouvriers' },
+                  { id: 'percentage', header: 'Pourcentage' },
+                  {
+                    id: 'performance',
+                    header: 'Performance',
+                    cell: (supervisor: any) => (
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        supervisor.performance === 'Excellent' ? 'bg-green-100 text-green-800' :
+                        supervisor.performance === 'Bon' ? 'bg-blue-100 text-blue-800' :
+                        supervisor.performance === 'Acceptable' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {supervisor.performance}
+                      </span>
+                    )
+                  }
+                ]}
+                title="Liste des Superviseurs"
+                description={`${supervisors.length} superviseurs au total`}
+              />
+            )}
           </TabsContent>
         </Tabs>
 
