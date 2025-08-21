@@ -3340,6 +3340,7 @@ interface EnhancedWorkersTableProps {
   fermes: Ferme[];
   isSuperAdmin: boolean;
   hasAllFarmsAccess: boolean;
+  supervisors: any[];
 }
 
 function EnhancedWorkersTable({ workers, fermes, isSuperAdmin, hasAllFarmsAccess }: EnhancedWorkersTableProps) {
