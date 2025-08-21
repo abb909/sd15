@@ -3365,13 +3365,22 @@ function EnhancedWorkersTable({ workers, fermes, isSuperAdmin, hasAllFarmsAccess
   // Get supervisor name helper
   const getSupervisorName = (supervisorId: string) => {
     if (!supervisorId) return '-';
-    const supervisor = supervisors.find(s => s.id === supervisorId);
+
+    // Check if supervisors data is available
+    if (!supervisors || supervisors.length === 0) {
+      console.warn('No supervisors data available');
+      return 'Superviseur inconnu';
+    }
+
+    const supervisor = supervisors.find(s => s && s.id === supervisorId);
+
     // Debug logging
     if (supervisorId && !supervisor) {
       console.log('Supervisor not found for ID:', supervisorId);
       console.log('Available supervisors:', supervisors.map(s => ({ id: s.id, nom: s.nom })));
     }
-    return supervisor?.nom || supervisorId;
+
+    return supervisor?.nom || 'Superviseur inconnu';
   };
 
   // Filtered and sorted data
