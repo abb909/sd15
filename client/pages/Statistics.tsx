@@ -3522,8 +3522,7 @@ function EnhancedWorkersTable({ workers, fermes, isSuperAdmin, hasAllFarmsAccess
           'Chambre': worker.chambre || '',
           'Date d\'entrée': worker.dateEntree ? new Date(worker.dateEntree).toLocaleDateString('fr-FR') : '',
           'Date de sortie': worker.dateSortie ? new Date(worker.dateSortie).toLocaleDateString('fr-FR') : '',
-          'Téléphone': worker.telephone || '',
-          'Superviseur': worker.supervisorId || ''
+          'Superviseur': getSupervisorName(worker.supervisorId || '')
         }));
 
         const farmWs = XLSX.utils.json_to_sheet(farmExportData);
@@ -3538,8 +3537,7 @@ function EnhancedWorkersTable({ workers, fermes, isSuperAdmin, hasAllFarmsAccess
           { width: 15 }, // Chambre
           { width: 15 }, // Date d'entrée
           { width: 15 }, // Date de sortie
-          { width: 15 }, // Téléphone
-          { width: 20 }  // Superviseur
+          { width: 25 }  // Superviseur
         ];
         farmWs['!cols'] = farmCols;
 
