@@ -3343,7 +3343,7 @@ interface EnhancedWorkersTableProps {
   supervisors: any[];
 }
 
-function EnhancedWorkersTable({ workers, fermes, isSuperAdmin, hasAllFarmsAccess }: EnhancedWorkersTableProps) {
+function EnhancedWorkersTable({ workers, fermes, isSuperAdmin, hasAllFarmsAccess, supervisors }: EnhancedWorkersTableProps) {
   // State for filtering and pagination
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedFerme, setSelectedFerme] = useState('all');
@@ -3359,6 +3359,13 @@ function EnhancedWorkersTable({ workers, fermes, isSuperAdmin, hasAllFarmsAccess
   const getFermeName = (fermeId: string) => {
     const ferme = fermes.find(f => f.id === fermeId);
     return ferme?.nom || fermeId;
+  };
+
+  // Get supervisor name helper
+  const getSupervisorName = (supervisorId: string) => {
+    if (!supervisorId) return '-';
+    const supervisor = supervisors.find(s => s.id === supervisorId);
+    return supervisor?.nom || supervisorId;
   };
 
   // Filtered and sorted data
