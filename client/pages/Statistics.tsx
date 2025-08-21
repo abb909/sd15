@@ -3490,6 +3490,13 @@ function EnhancedWorkersTable({ workers, fermes, isSuperAdmin, hasAllFarmsAccess
 
   // Export to Excel function with multiple sheets
   const handleExportExcel = () => {
+    // Check if supervisors are loaded
+    if (!supervisors || supervisors.length === 0) {
+      console.warn('Supervisors not loaded yet, exporting with IDs only');
+    } else {
+      console.log('Exporting with supervisor names, found', supervisors.length, 'supervisors');
+    }
+
     const wb = XLSX.utils.book_new();
 
     // Set column widths template
