@@ -3345,6 +3345,9 @@ interface EnhancedWorkersTableProps {
 }
 
 function EnhancedWorkersTable({ workers, fermes, isSuperAdmin, hasAllFarmsAccess, supervisors }: EnhancedWorkersTableProps) {
+  // Debug logging
+  console.log('EnhancedWorkersTable received supervisors:', supervisors?.length || 0, supervisors);
+
   // State for filtering and pagination
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedFerme, setSelectedFerme] = useState('all');
