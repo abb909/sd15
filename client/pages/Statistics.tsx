@@ -3124,6 +3124,7 @@ export default function Statistics() {
               fermes={fermes}
               isSuperAdmin={isSuperAdmin}
               hasAllFarmsAccess={hasAllFarmsAccess}
+              supervisors={supervisors}
             />
           </TabsContent>
 
