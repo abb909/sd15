@@ -3366,6 +3366,11 @@ function EnhancedWorkersTable({ workers, fermes, isSuperAdmin, hasAllFarmsAccess
   const getSupervisorName = (supervisorId: string) => {
     if (!supervisorId) return '-';
     const supervisor = supervisors.find(s => s.id === supervisorId);
+    // Debug logging
+    if (supervisorId && !supervisor) {
+      console.log('Supervisor not found for ID:', supervisorId);
+      console.log('Available supervisors:', supervisors.map(s => ({ id: s.id, nom: s.nom })));
+    }
     return supervisor?.nom || supervisorId;
   };
 
